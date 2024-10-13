@@ -36,6 +36,16 @@
         </div>
 
         <div class="form-group">
+            <label for="technologies">Tecnologie</label>
+            <select name="technologies[]" class="form-control" multiple>
+                @foreach ($technologies as $technology)
+                    <option value="{{ $technology->id }}">{{ $technology->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+
+        <div class="form-group">
             <label for="cover_image">Immagine di Copertina</label>
             <input type="file" name="cover_image" class="form-control">
         </div>

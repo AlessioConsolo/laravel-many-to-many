@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Modifica Progetto</h1>
+    <h1>Modifica Progetto: {{ $project->title }}</h1>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -16,6 +16,7 @@
     <form action="{{ route('admin.projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+        
         <div class="form-group">
             <label for="title">Titolo</label>
             <input type="text" name="title" class="form-control" value="{{ old('title', $project->title) }}">
@@ -31,7 +32,20 @@
             <select name="type_id" class="form-control">
                 <option value="">Seleziona una tipologia</option>
                 @foreach ($types as $type)
-                    <option value="{{ $type->id }}" {{ $type->id == old('type_id', $project->type_id) ? 'selected' : '' }}>{{ $type->name }}</option>
+                    <option value="{{ $type->id }}" {{ $type->id == $project->type_id ? 'selected' : '' }}>
+                        {{ $type->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="technologies">Tecnologie</label>
+            <select name="technologies[]" class="form-control" multiple>
+                @foreach ($technologies as $technology)
+                    <option value="{{ $technology->id }}" {{ $project->technologies->contains($technology->id) ? 'selected' : '' }}>
+                        {{ $technology->name }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -41,6 +55,6 @@
             <input type="file" name="cover_image" class="form-control">
         </div>
 
-        <button type="submit" class="btn btn-primary">Aggiorna</button>
+        <button type="submit" class="btn btn-primary">Salva</button>
     </form>
 @endsection

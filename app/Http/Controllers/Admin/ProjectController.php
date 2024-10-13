@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Type;
 use Illuminate\Http\Request;
+use App\Models\Technology;
 use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
@@ -30,16 +31,15 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'type_id' => 'nullable|exists:types,id'
+            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'technologies' => 'array'
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('cover_images', 'public');
-            $validated['cover_image'] = $imagePath;
-        }
+        $project = Project::create($validated);
 
-        Project::create($validated);
+        if ($request->has('technologies')) {
+            $project->technologies()->attach($request->technologies);
+        }
 
         return redirect()->route('admin.projects.index')->with('success', 'Progetto creato con successo');
     }
@@ -54,7 +54,8 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         $types = Type::all();
-        return view('admin.projects.edit', compact('project', 'types'));
+        $technologies = Technology::all();
+        return view('admin.projects.edit', compact('project', 'types', 'technologies'));
     }
 
 
@@ -64,20 +65,15 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'type_id' => 'nullable|exists:types,id'
+            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'technologies' => 'array'
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($project->cover_image) {
-                Storage::disk('public')->delete($project->cover_image);
-            }
-
-            $imagePath = $request->file('image')->store('cover_images', 'public');
-            $validated['cover_image'] = $imagePath;
-        }
-
         $project->update($validated);
+
+        if ($request->has('technologies')) {
+            $project->technologies()->sync($request->technologies);
+        }
 
         return redirect()->route('admin.projects.index')->with('success', 'Progetto aggiornato con successo');
     }
